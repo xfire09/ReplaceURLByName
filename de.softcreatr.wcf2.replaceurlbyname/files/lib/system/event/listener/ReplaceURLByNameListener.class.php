@@ -69,7 +69,6 @@ class ReplaceURLByNameListener implements IEventListener {
 		// request
 		try {
 			$request = new HTTPRequest($url);
-			$request->addHeader('User-Agent', 'HTTP.PHP (ReplaceURLByName; WoltLab Community Framework/' . WCF_VERSION . '; ' . WCF::getLanguage()->languageCode . ')');
 			$request->execute();
 			
 			$reply = $request->getReply();
