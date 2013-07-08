@@ -54,10 +54,10 @@ class ReplaceURLByNameListener implements IEventListener {
 	 * Returns the content of the Title-Tag from a given URL
 	 */	
 	private function fetchTitle($url) {
-		$title = array();
+		$title = '';
 		
 		// add protocol if necessary
-		if (!preg_match('/[a-z]:\/\//si', $url)) {
+		if (!Regex::compile('[a-z]://')->match($url)) {
 			$url = 'http://' . $url;
 		}
 		
@@ -82,16 +82,20 @@ class ReplaceURLByNameListener implements IEventListener {
 		$mimeType = (isset($reply['headers']['Content-Type']) && !empty($reply['headers']['Content-Type']) ? $reply['headers']['Content-Type'] : false);
 		
 		// title tags should just appear in text/html documents
-		if ($reply['statusCode'] > 0 && strpos($mimeType, 'text/html') !== false) {	
-			$content = $reply['body'];
-			preg_match('/\<title\>(.*)\<\/title\>/is', $content, $title);
+		if (isset($reply['statusCode']) && $reply['statusCode'] > 0 && strpos($mimeType, 'text/html') !== false) {
+			$regex = new Regex('<title>(.*)</title>');
+			
+			if ($regex->match($reply['body'])) {
+				$matches = $regex->getMatches();
+				$title = $matches[1];
+			}
 		} else if ($mimeType) {
 			// use the filename, if file exists but mime-type is not text/html
-			$title[1] = basename(urldecode($url));
+			$title = basename(urldecode($url));
 		}
 		
 		// return
-		return (isset($title[1]) ? $this->niceTitle($title[1]) : false);
+		return (!empty($title) ? $this->niceTitle($title) : false);
 	}
 	
 	/**
