@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package name="de.softcreatr.wcf2.replaceurlbyname" xmlns="http://www.woltlab.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.woltlab.com http://www.woltlab.com/XSD/maelstrom/package.xsd">
+	<packageinformation>
+		<packagename><![CDATA[ReplaceURLByName]]></packagename>
+		<packagedescription><![CDATA[This plugin will try to convert posted URLs into the linked website titles.]]></packagedescription>
+		<isunique>1</isunique>
+		<version>1.0.0</version>
+		<date>2013-07-07</date>
+	</packageinformation>
+
+	<authorinformation>
+        <author><![CDATA[Sascha Greuel]]></author>
+        <authorurl><![CDATA[http://www.softcreatr.de]]></authorurl>
+	</authorinformation>
+
+	<requiredpackages>
+		<requiredpackage minversion="2.0.0 Beta 4">com.woltlab.wcf</requiredpackage>
+	</requiredpackages>
+	
+	<license>
+		<license><![CDATA[Creative Commons <by-sa>]]></license>
+		<licenseURL><![CDATA[http://creativecommons.org/licenses/by-sa/3.0/]]></licenseURL>
+	</license>
+
+	<instructions type="install">		
+		<!-- files -->
+		<instruction type="file">files.tar</instruction>
+
+		<!-- config -->
+		<instruction type="eventListener">eventListener.xml</instruction>
+	</instructions>
+</package>
