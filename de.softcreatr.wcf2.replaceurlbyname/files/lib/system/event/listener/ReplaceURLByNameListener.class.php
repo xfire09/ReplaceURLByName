@@ -35,15 +35,15 @@ class ReplaceURLByNameListener implements IEventListener {
 		$regex = new Regex('\[url(?|=[\'"]?+([^]"\']++)[\'"]?+]([^[]++)|](([^[]++)))\[/url\]', Regex::CASE_INSENSITIVE);
 		if ($regex->match($eventObj->text, true, 8)) {			
 			foreach ($regex->getMatches() as $match) {
-				if (!isset($match[2])) {
-					return;
+				if (!isset($match[2]) || ApplicationHandler::getInstance()->isInternalURL($match[1])) {
+					continue;
 				}
 				
 				if (empty($match[2]) || $match[1] == $match[2]) {
-					$title = $this->fetchTitle($match[2]);
+					$title = $this->fetchTitle($match[1]);
 					
 					if ($title) {
-						$eventObj->text = StringUtil::replaceIgnoreCase($match[0], "[url='" . $match[2] . "']" . $title . "[/url]", $eventObj->text);
+						$eventObj->text = StringUtil::replaceIgnoreCase($match[0], "[url='" . $match[1] . "']" . $title . "[/url]", $eventObj->text);
 					}
 				}
 			}
@@ -59,11 +59,6 @@ class ReplaceURLByNameListener implements IEventListener {
 		// add protocol if necessary
 		if (!Regex::compile('[a-z]://')->match($url)) {
 			$url = 'http://' . $url;
-		}
-		
-		// do not continue, if url is an internal one
-		if (ApplicationHandler::getInstance()->isInternalURL($url)) {
-			return false;
 		}
 		
 		// request
