@@ -62,7 +62,8 @@ class ReplaceURLByNameListener implements IEventListener {
 			$request->execute();
 			
 			$reply = $request->getReply();
-		} catch (\Exception $e) {
+		}
+		catch (\Exception $e) {
 			return false;
 		}
 		
