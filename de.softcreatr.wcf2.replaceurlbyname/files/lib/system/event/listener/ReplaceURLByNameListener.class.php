@@ -3,7 +3,6 @@ namespace wcf\system\event\listener;
 use wcf\data\bbcode\BBCode;
 use wcf\system\application\ApplicationHandler;
 use wcf\system\event\IEventListener;
-use wcf\system\Regex;
 use wcf\system\WCF;
 use wcf\util\HTTPRequest;
 use wcf\util\StringUtil;
@@ -22,29 +21,25 @@ class ReplaceURLByNameListener implements IEventListener {
 	/**
 	 * @see	wcf\system\event\IEventListener::execute()
 	 */
-	public function execute($eventObj, $className, $eventName) {
-		if (!$eventObj->text) {
+	public function execute($eventObj, $className, $eventName) {#
+		// check if there's text and that the url BBCode is allowed
+		if (!$eventObj->text || $eventObj->allowedBBCodes === null || !BBCode::isAllowedBBCode('url', $eventObj->allowedBBCodes)) {
 			return;
 		}
 		
-		// check if needed url BBCode is allowed
-		if ($eventObj->allowedBBCodes !== null && !BBCode::isAllowedBBCode('url', $eventObj->allowedBBCodes)) {
-			return;
-		}
-		
-		$regex = new Regex('\[url(?|=[\'"]?+([^]"\']++)[\'"]?+]([^[]++)|](([^[]++)))\[/url\]', Regex::CASE_INSENSITIVE);
-		if ($regex->match($eventObj->text, true, 8)) {			
-			foreach ($regex->getMatches() as $match) {
-				if (!isset($match[2]) || ApplicationHandler::getInstance()->isInternalURL($match[1])) {
-					continue;
-				}
-				
-				if (empty($match[2]) || $match[1] == $match[2]) {
-					$title = $this->fetchTitle($match[1]);
-					
-					if ($title) {
-						$eventObj->text = StringUtil::replaceIgnoreCase($match[0], "[url='" . $match[1] . "']" . $title . "[/url]", $eventObj->text);
-					}
+		// extract url bbcodes
+		preg_match_all('~\[url(?|=[\'"]?+([^]"\']++)[\'"]?+]([^[]++)|](([^[]++)))\[/url]~i', $eventObj->text, $matches, PREG_SET_ORDER);
+
+		foreach ($matches as $match) {
+			if (!isset($match[2]) || ApplicationHandler::getInstance()->isInternalURL($match[1])) {
+				continue;
+			}
+			
+			if (empty($match[2]) || $match[1] == $match[2]) {
+				$title = $this->fetchTitle($match[1]);
+			
+				if ($title) {
+					$eventObj->text = StringUtil::replaceIgnoreCase($match[0], "[url='" . $match[1] . "']" . $title . "[/url]", $eventObj->text);
 				}
 			}
 		}
@@ -57,7 +52,7 @@ class ReplaceURLByNameListener implements IEventListener {
 		$title = '';
 		
 		// add protocol if necessary
-		if (!Regex::compile('[a-z]://')->match($url)) {
+		if (!preg_match('/[a-z]:\/\//si', $url)) {
 			$url = 'http://' . $url;
 		}
 		
@@ -67,8 +62,7 @@ class ReplaceURLByNameListener implements IEventListener {
 			$request->execute();
 			
 			$reply = $request->getReply();
-		}
-		catch (\Exception $e) {
+		} catch (\Exception $e) {
 			return false;
 		}
 		
@@ -77,19 +71,15 @@ class ReplaceURLByNameListener implements IEventListener {
 		
 		// title tags should just appear in text/html documents
 		if (isset($reply['statusCode']) && $reply['statusCode'] > 0 && strpos($mimeType, 'text/html') !== false) {
-			$regex = new Regex('<title>(.*)</title>');
-			
-			if ($regex->match($reply['body'])) {
-				$matches = $regex->getMatches();
-				$title = $matches[1];
-			}
+			preg_match('/\<title\>(.*?)\<\/title\>/is', $reply['body'], $title);
+			$title = (isset($title[1]) ? $title[1] : '');
 		} else if ($mimeType) {
 			// use the filename, if file exists but mime-type is not text/html
 			$title = basename(urldecode($url));
 		}
-		
+
 		// return
-		return (!empty($title) ? $this->niceTitle($title) : false);
+		return (!empty($title) ? $this->niceTitle($title) : '');
 	}
 	
 	/**

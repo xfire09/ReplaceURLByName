@@ -4,8 +4,8 @@
 		<packagename><![CDATA[ReplaceURLByName]]></packagename>
 		<packagedescription><![CDATA[This plugin will try to convert posted URLs into the linked website titles.]]></packagedescription>
 		<isunique>1</isunique>
-		<version>1.0.1</version>
-		<date>2013-07-12</date>
+		<version>1.0.2</version>
+		<date>2013-09-22</date>
 	</packageinformation>
 
 	<authorinformation>
@@ -14,7 +14,7 @@
 	</authorinformation>
 
 	<requiredpackages>
-		<requiredpackage minversion="2.0.0 Beta 4">com.woltlab.wcf</requiredpackage>
+		<requiredpackage minversion="2.0.0 Beta 9">com.woltlab.wcf</requiredpackage>
 	</requiredpackages>
 	
 	<license>
